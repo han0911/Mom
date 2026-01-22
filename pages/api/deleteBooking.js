@@ -25,5 +25,6 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("서버 에러:", error);
     return res.status(500).json({ message: "서버 내부 오류" });
+    //버셀 테스트
   }
 }

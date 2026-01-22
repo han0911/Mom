@@ -1,6 +1,5 @@
 import { MongoClient } from "mongodb";
-const url =
-  "mongodb+srv://han0911:a36936@cluster0.swfhspa.mongodb.net/?appName=Cluster0";
+const url = process.env.NEXT_PUBLIC_MONGODB_URL;
 const options = {};
 let connectDB;
 
@@ -17,6 +16,6 @@ if (process.env.NODE_ENV === "development") {
   }
   connectDB = global._mongo;
 } else {
-  connectDB = new MongoClient(url, options).connect()
+  connectDB = new MongoClient(url, options).connect();
 }
 export { connectDB };

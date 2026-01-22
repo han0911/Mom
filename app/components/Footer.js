@@ -1,0 +1,8 @@
+function Footer() {
+  return (
+    <footer className="py-6 text-center text-gray-400 text-xs">
+      © 2024 BEAUTY CARE. All rights reserved.
+    </footer>
+  );
+}
+export default Footer;

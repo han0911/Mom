@@ -22,5 +22,6 @@ export default async function Looking(req, res) {
     }
   } else {
     return res.status(405).json({ message: "POST 요청만 허용합니다." });
+    //ㅇㅇ
   }
 }

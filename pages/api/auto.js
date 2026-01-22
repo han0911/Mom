@@ -1,6 +1,6 @@
-// util/cron.js (또는 서버 메인 파일)
+
 import cron from 'node-cron';
-import { connectDB } from '../util/database';
+import { connectDB } from '../../util/database';
 
 // 매일 자정(00:00)에 실행되는 작업
 cron.schedule('0 0 * * *', async () => {

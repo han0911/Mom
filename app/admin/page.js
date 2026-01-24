@@ -1,166 +1,169 @@
 "use client";
-import { useState } from "react";
-import { Eye, X, Trash2 } from "lucide-react";
+import axios from "axios";
+import { Calendar, Clock, Mail, ShieldCheck, User, X } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import NotFound from "../components/Notfound";
 
 export default function AdminPage() {
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      date: "3월 15일 (금)",
-      time: "10:00",
-      userName: "김민영",
-      phone: "010-1234-5678",
-    },
-    {
-      id: 2,
-      date: "3월 15일 (금)",
-      time: "14:00",
-      userName: "박지현",
-      phone: "010-3456-7890",
-    },
-    {
-      id: 3,
-      date: "3월 16일 (토)",
-      time: "10:00",
-      userName: "이수진",
-      phone: "010-2345-6789",
-    },
-    {
-      id: 4,
-      date: "3월 18일 (월)",
-      time: "14:00",
-      userName: "정민아",
-      phone: "010-5678-9012",
-    },
-    {
-      id: 5,
-      date: "3월 18일 (월)",
-      time: "15:00",
-      userName: "강유리",
-      phone: "010-6789-0123",
-    },
-    {
-      id: 6,
-      date: "3월 20일 (수)",
-      time: "10:00",
-      userName: "윤서아",
-      phone: "010-7890-1234",
-    },
-    {
-      id: 7,
-      date: "3월 20일 (수)",
-      time: "16:00",
-      userName: "송하은",
-      phone: "010-8901-2345",
-    },
-    {
-      id: 8,
-      date: "3월 22일 (금)",
-      time: "11:00",
-      userName: "임채원",
-      phone: "010-9012-3456",
-    },
-    {
-      id: 9,
-      date: "3월 25일 (월)",
-      time: "14:00",
-      userName: "한지우",
-      phone: "010-0123-4567",
-    },
-  ]);
+  const [adminBookings, setAdminBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const user = session?.user;
 
-  const handleView = (id) => {
-    alert(`예약 ID ${id} 상세 보기`);
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("/api/all");
+
+      const sortedData = response.data.sort((a, b) => {
+        if (a.date !== b.date) {
+          return a.date.localeCompare(b.date);
+        }
+        const timeA = parseInt(a.time.replace(":", ""), 10);
+        const timeB = parseInt(b.time.replace(":", ""), 10);
+
+        return timeA - timeB; // 오름차순 정렬
+      });
+
+      setAdminBookings(sortedData);
+    } catch (error) {
+      console.error("데이터 로드 실패:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      setBookings(bookings.filter((booking) => booking.id !== id));
+  useEffect(() => {
+    if (status === "authenticated" && user?.role === "admin") {
+      fetchBookings();
+    }
+  }, [status, user]);
+
+  if (status === "loading")
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-pink-50 text-rose-400 font-bold">
+        관리자 권한 확인 중...
+      </div>
+    );
+
+  if (user?.role !== "admin") return <NotFound />;
+
+  const handleDelete = async (id) => {
+    console.log(id)
+    if (!window.confirm("정말 예약을 취소하시겠습니까?")) return;
+    try {
+      const response = await axios.delete("/api/deleteBooking", {
+        data: { id },
+      });
+      if (response.status === 200) {
+        setAdminBookings((prev) =>
+          prev.filter((booking) => (booking._id || booking.id) !== id),
+        );
+        alert("예약이 취소되었습니다.");
+      }
+    } catch (error) {
+      console.error("삭제 실패 상세:", error.response?.data || error.message);
+      alert("취소 처리 중 오류가 발생했습니다.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-pink-50/20 py-10 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            전체 예약 관리
-          </h1>
+        {/* 헤더 섹션 */}
+        <div className="flex justify-between items-end mb-8">
+          <div>
+            <div className="flex items-center gap-2 text-rose-500 font-bold mb-1">
+              <ShieldCheck className="w-5 h-5" />
+              <span className="text-sm">ADMIN PANEL</span>
+            </div>
+            <h1 className="text-3xl font-black text-gray-800">
+              예약 타임라인 관리
+            </h1>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">
+              Total Bookings
+            </p>
+            <p className="text-3xl font-black text-rose-500 leading-none">
+              {adminBookings.length}
+            </p>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          {/* Title Bar */}
-          <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-700">
-                전체 예약 목록
-              </h2>
-              <span className="text-sm text-gray-600 bg-white px-4 py-1 rounded-full border border-gray-200">
-                총 {bookings.length}건
-              </span>
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-100 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                    날짜
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                    시간
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                    고객명
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                    연락처
-                  </th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
-                    관리
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {bookings.map((booking) => (
-                  <tr
-                    key={booking.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 text-sm text-gray-800">
-                      {booking.date}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-800">
-                      {booking.time}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {booking.userName}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {booking.phone}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
-                    
-                        {/* 삭제 버튼 */}
-                        <button
-                          onClick={() => handleDelete(booking.id)}
-                          className="p-2 rounded-lg bg-red-50 hover:bg-red-100 transition-colors"
-                          title="삭제"
-                        >
-                          <X className="w-4 h-4 text-red-600" />
-                        </button>
+        {/* 테이블 리스트 */}
+        <div className="bg-white rounded-3xl shadow-xl shadow-rose-100/50 overflow-hidden border border-rose-100">
+          <table className="w-full text-left">
+            <thead className="bg-rose-50/50 border-b border-rose-100">
+              <tr>
+                <th className="p-5 text-rose-900 font-bold text-sm">
+                  예약 일시
+                </th>
+                <th className="p-5 text-rose-900 font-bold text-sm">
+                  예약자명
+                </th>
+                <th className="p-5 text-rose-900 font-bold text-sm">
+                  이메일 주소
+                </th>
+                <th className="p-5 text-center text-rose-900 font-bold text-sm">
+                  관리
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-rose-50">
+              {adminBookings.map((booking) => (
+                <tr
+                  key={booking._id || booking.id}
+                  className="hover:bg-rose-50/30 transition-colors"
+                >
+                  <td className="p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white p-2 rounded-lg border border-rose-100 shadow-sm">
+                        <Calendar className="w-4 h-4 text-rose-400" />
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      <div>
+                        <div className="font-bold text-gray-800">
+                          {booking.date}
+                        </div>
+                        <div className="text-xs font-bold text-rose-400 flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {booking.time}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="p-5">
+                    <div className="flex items-center gap-2 font-semibold text-gray-700">
+                      <User className="w-4 h-4 text-gray-300" />
+                      {booking.userId}
+                    </div>
+                  </td>
+                  <td className="p-5 text-sm text-gray-500">
+                    <div className="flex items-center gap-2 underline decoration-rose-100 underline-offset-4">
+                      <Mail className="w-4 h-4 text-gray-300" />
+                      {booking.userEmail}
+                    </div>
+                  </td>
+                  <td className="p-5">
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => handleDelete(booking._id || booking.id)}
+                        className="p-2.5 rounded-xl text-rose-300 hover:text-white hover:bg-rose-500 transition-all border border-transparent hover:shadow-lg hover:shadow-rose-200"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {adminBookings.length === 0 && !loading && (
+            <div className="p-20 text-center text-gray-300 font-medium">
+              현재 예약된 데이터가 없습니다.
+            </div>
+          )}
         </div>
       </div>
     </div>

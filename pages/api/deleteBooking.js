@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       return res.status(404).json({ message: "DB에 해당 ID의 데이터가 존재하지 않습니다." });
     }
 
-    const result = await db.collection("bookings").deleteOne({
+    const result = await db.collection("booking").deleteOne({
       _id: new ObjectId(id)
     });
 

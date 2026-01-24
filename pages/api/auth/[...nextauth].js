@@ -21,7 +21,8 @@ export const authOptions = {
         token.user = {
           name: user.name,
           email: user.email,
-          image: user.image 
+          image: user.image ,
+          role: user.email === process.env.NEXT_PUBLIC_ADMIN ? 'admin' : 'user'
         };
       }
       return token;

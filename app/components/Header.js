@@ -5,65 +5,73 @@ import { usePathname } from "next/navigation";
 
 export default function Header({ user, signOut }) {
   const pathname = usePathname();
-  const isLookingPage = pathname === "/looking";
 
   return (
-    <header className="bg-white py-3 shadow-sm sticky top-0 z-10">
-      <div className="container mx-auto px-4 flex items-center justify-between relative">
-        {/* 1. 왼쪽: 로고 영역 */}
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-gray-800 hidden lg:block">
-            피부관리
-          </h1>
-        </div>
-
-        {/* 2. 중앙: 버튼들을 flex로 묶고 gap을 줌 */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3">
-          {/* ✅ gap-3을 추가해서 버튼 사이의 간격을 띄웠습니다. 더 띄우고 싶으면 gap-4로 바꾸세요. */}
-
-          <Link
-            href={"/booking"}
-            className="px-4 py-2 bg-pink-50 text-pink-600 text-xs sm:text-sm font-bold rounded-full border border-pink-100 hover:bg-pink-100 transition-all shadow-sm active:scale-95 whitespace-nowrap"
-          >
-            예약하러 가기
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      {/* 상단 바: 로고와 유저 정보 */}
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* 1. 왼쪽: 로고 영역 */}
+          <Link href="/" className="flex items-center gap-2">
+            <h1 className="text-lg md:text-xl font-bold text-gray-800">
+              피부관리 {user.role === "admin" ? <Link href="/admin">관리자페이지로 가기</Link> : ""} 페이지
+            </h1>
           </Link>
-          <Link
-            href={"/looking"}
-            className="px-4 py-2 bg-pink-50 text-pink-600 text-xs sm:text-sm font-bold rounded-full border border-pink-100 hover:bg-pink-100 transition-all shadow-sm active:scale-95 whitespace-nowrap"
-          >
-            예약한 날짜 보기
-          </Link>
-          <Link
-            href="/all"
-            className="px-4 py-2 bg-pink-50 text-pink-600 text-xs sm:text-sm font-bold rounded-full border border-pink-100 hover:bg-pink-100 transition-all shadow-sm active:scale-95 whitespace-nowrap"
-          >
-            모든 예약 보기
-          </Link>
-        </div>
 
-        {/* 3. 오른쪽: 유저 정보 및 로그아웃 */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-gray-50 pl-3 pr-1 py-1 rounded-full border border-gray-100">
-            <div className="text-right hidden md:block px-1">
-              <p className="text-sm font-bold text-gray-800 leading-none">
-                {user?.name}님
-              </p>
-              <p className="text-[10px] text-gray-400 mt-1">{user?.email}</p>
+          {/* 2. 오른쪽: 유저 정보 및 로그아웃 */}
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-2 bg-gray-50 pl-2 md:pl-3 pr-1 py-1 rounded-full border border-gray-100">
+              <div className="text-right hidden sm:block px-1">
+                <p className="text-xs md:text-sm font-bold text-gray-800 leading-none">
+                  {user?.name}님
+                </p>
+                <p className="text-[10px] text-gray-400 mt-1">{user?.email}</p>
+              </div>
+              <img
+                src={user?.image || "/default-profile.png"}
+                alt="profile"
+                className="w-8 h-8 md:w-9 md:h-9 rounded-full border-2 border-white shadow-sm object-cover"
+              />
             </div>
-            <img
-              src={user?.image}
-              alt="profile"
-              className="w-9 h-9 rounded-full border-2 border-white shadow-sm object-cover"
-            />
+            <button
+              onClick={() => signOut()}
+              className="text-xs font-medium text-gray-400 hover:text-pink-600 transition-colors whitespace-nowrap"
+            >
+              로그아웃
+            </button>
           </div>
-          <button
-            onClick={() => signOut()}
-            className="text-xs font-medium text-gray-400 hover:text-pink-600 transition-colors"
-          >
-            로그아웃
-          </button>
+        </div>
+
+        {/* 3. 하단 네비게이션: 모바일에서 찌그러지지 않게 가로 스크롤 허용 */}
+        <div className="flex items-center justify-start md:justify-center gap-2 pb-3 overflow-x-auto no-scrollbar">
+          {/* no-scrollbar는 커스텀 CSS 혹은 단순히 overflow-x-auto로 작동 */}
+          <HeaderLink href="/booking" active={pathname === "/booking"}>
+            예약하기
+          </HeaderLink>
+          <HeaderLink href="/looking" active={pathname === "/looking"}>
+            내 예약 확인
+          </HeaderLink>
+          <HeaderLink href="/all" active={pathname === "/all"}>
+            전체 현황
+          </HeaderLink>
         </div>
       </div>
     </header>
+  );
+}
+
+// 재사용 가능한 링크 컴포넌트
+function HeaderLink({ href, children, active }) {
+  return (
+    <Link
+      href={href}
+      className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-full border transition-all shadow-sm active:scale-95 whitespace-nowrap flex-shrink-0 ${
+        active
+          ? "bg-pink-500 text-white border-pink-500"
+          : "bg-pink-50 text-pink-600 border-pink-100 hover:bg-pink-100"
+      }`}
+    >
+      {children}
+    </Link>
   );
 }

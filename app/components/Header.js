@@ -18,7 +18,7 @@ export default function Header({ user, signOut }) {
             </h1>
           </Link>
           <span className="flex-1">
-            {user.role === "admin" ? (
+            {user?.role === "admin" ? (
               <Link href="/admin">관리자페이지로 가기</Link>
             ) : (
               ""

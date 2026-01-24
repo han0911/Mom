@@ -14,9 +14,16 @@ export default function Header({ user, signOut }) {
           {/* 1. 왼쪽: 로고 영역 */}
           <Link href="/" className="flex items-center gap-2">
             <h1 className="text-lg md:text-xl font-bold text-gray-800">
-              피부관리 {user.role === "admin" ? <Link href="/admin">관리자페이지로 가기</Link> : ""} 페이지
+              피부관리 페이지
             </h1>
           </Link>
+          <span className="flex-1">
+            {user.role === "admin" ? (
+              <Link href="/admin">관리자페이지로 가기</Link>
+            ) : (
+              ""
+            )}
+          </span>
 
           {/* 2. 오른쪽: 유저 정보 및 로그아웃 */}
           <div className="flex items-center gap-2 md:gap-4">
